@@ -10,12 +10,25 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs +='src/test/kotlin'
+        //        main.jniLibs.srcDirs += 'src/main/cpp'
+
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+
 }
 
 dependencies {
@@ -25,4 +38,21 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.github.thiagooo0:lmnplayer:v1.0.3'
+//    # required, enough for most devices.
+//    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+//    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+
+//    # Other ABIs: optional
+//    implementation 'tv.danmaku.ijk.media:ijkplayer-armv5:0.8.8'
+//    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+//    compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
+//    compile 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
+
+//    # ExoPlayer as IMediaPlayer: optional, experimental
+//    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
+
+    compileOnly 'de.robv.android.xposed:api:82'
+
+    implementation 'com.jaredrummler:android-shell:1.0.0'
 }
