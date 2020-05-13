@@ -9,9 +9,9 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
-import com.hlq.touchserver.wrappers.InputManager
-//import com.hlq.touchserver.wrappers.InputManager
-import com.hlq.touchserver.wrappers.ServiceManager
+import com.pompip.touchserver.wrappers.InputManager
+//import com.pompip.touchserver.wrappers.InputManager
+import com.pompip.touchserver.wrappers.ServiceManager
 import com.pompip.testHttp.NetManager
 
 import kotlinx.android.synthetic.main.activity_main.*
