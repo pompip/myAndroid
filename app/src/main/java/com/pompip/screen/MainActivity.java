@@ -12,11 +12,24 @@ import com.example.bonree.myapplication.R;
 import com.jaredrummler.android.shell.CommandResult;
 import com.jaredrummler.android.shell.Shell;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
         final ExecutorService executorService = Executors.newFixedThreadPool(4);
         Intent service = new Intent(this,ScreenService.class);
         startService(service);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                connect();
+            }
+        });
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -54,19 +73,71 @@ public class MainActivity extends AppCompatActivity {
         LocalSocket socket = new LocalSocket();
         try {
             socket.connect(new LocalSocketAddress("singleTouch"));
+
             Log.e(TAG, "bind success");
             BufferedInputStream bufferedInputStream = new BufferedInputStream(socket.getInputStream());
-            byte[] bytes = new byte[2048];
-            int l = 0;
-            while ((l = bufferedInputStream.read(bytes)) != -1) {
-                Log.e(TAG, l + "input");
-            }
+            ReadableByteChannel readableByteChannel = Channels.newChannel(socket.getInputStream());
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+            int len=0;
+
+            while ((len =readableByteChannel.read(byteBuffer))!=-1){
+                byte[] array = new byte[byteBuffer.position()];
+                byteBuffer.get(array);
+                Log.e(TAG, array.length + "input");
+                if (webSocket!=null){
+                    webSocket.send(new ByteString(array));
+                }
+            };
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    String path = "rtmp://live.hkstv.hk.lxdns.com/live/hks";
+    WebSocket webSocket;
+    void connect(){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+        Request request = new Request.Builder().url("http://172.27.35.1:5000/echo").build();
+        webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
+            @Override
+            public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
+                super.onClosed(webSocket, code, reason);
+                Log.d(TAG, "onClosed() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
+            }
+
+            @Override
+            public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
+                super.onClosing(webSocket, code, reason);
+                Log.d(TAG, "onClosing() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
+            }
+
+            @Override
+            public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
+                super.onFailure(webSocket, t, response);
+                Log.d(TAG, "onFailure() called with: webSocket = [" + webSocket + "], t = [" + t + "], response = [" + response + "]");
+            }
+
+            @Override
+            public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
+                super.onMessage(webSocket, text);
+                Log.d(TAG, "onMessage() called with: webSocket = [" + webSocket + "], text = [" + text + "]");
+            }
+
+            @Override
+            public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
+                super.onMessage(webSocket, bytes);
+                Log.d(TAG, "onMessage() called with: webSocket = [" + webSocket + "], bytes = [" + bytes + "]");
+            }
+
+            @Override
+            public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
+                super.onOpen(webSocket, response);
+                Log.d(TAG, "onOpen() called with: webSocket = [" + webSocket + "], response = [" + response + "]");
+            }
+        });
+
+    }
 
     @Override
     protected void onResume() {

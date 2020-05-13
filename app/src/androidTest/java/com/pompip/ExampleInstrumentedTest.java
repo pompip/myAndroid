@@ -1,4 +1,4 @@
-package com.example.bonree.myapplication;
+package com.pompip;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

@@ -1,5 +1,6 @@
 package com.pompip.screen;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,6 +25,7 @@ public class ScreenService extends Service {
     }
     ExecutorService executorService ;
     Process process ;
+    private ActivityManager mActivityManager;
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -31,6 +34,13 @@ public class ScreenService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+
+        mActivityManager=(ActivityManager)getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = mActivityManager.getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo info:runningAppProcesses){
+            Log.e(TAG, "onStartCommand: "+info.processName +" pid:"+info.pid );
+        }
         executorService =Executors.newFixedThreadPool(4);
         executorService.submit(new Runnable() {
             @Override
