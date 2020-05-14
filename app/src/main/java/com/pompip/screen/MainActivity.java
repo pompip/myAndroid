@@ -29,7 +29,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import okio.BufferedSource;
 import okio.ByteString;
+import okio.Okio;
+import okio.Source;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -75,19 +78,17 @@ public class MainActivity extends AppCompatActivity {
             socket.connect(new LocalSocketAddress("singleTouch"));
 
             Log.e(TAG, "bind success");
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(socket.getInputStream());
-            ReadableByteChannel readableByteChannel = Channels.newChannel(socket.getInputStream());
-            ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-            int len=0;
 
-            while ((len =readableByteChannel.read(byteBuffer))!=-1){
-                byte[] array = new byte[byteBuffer.position()];
-                byteBuffer.get(array);
-                Log.e(TAG, array.length + "input");
+
+            BufferedSource buffer = Okio.buffer(Okio.source(socket.getInputStream()));
+
+            while (true){
+                byte[] byteString = buffer.readByteArray();
                 if (webSocket!=null){
-                    webSocket.send(new ByteString(array));
+                    Log.e(TAG,"to:"+byteString.length);
+                    webSocket.send(new ByteString(byteString));
                 }
-            };
+            }
 
 
         } catch (IOException e) {
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     WebSocket webSocket;
     void connect(){
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://172.27.35.1:5000/echo").build();
+        Request request = new Request.Builder().url("http://192.168.2.200:5000/echo").build();
         webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {

@@ -18,14 +18,14 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ScreenService extends Service {
     private static final String TAG = "ScreenService";
     public ScreenService() {
     }
     ExecutorService executorService ;
-    Process process ;
-    private ActivityManager mActivityManager;
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -34,100 +34,46 @@ public class ScreenService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-
-        mActivityManager=(ActivityManager)getSystemService(ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = mActivityManager.getRunningAppProcesses();
-        for (ActivityManager.RunningAppProcessInfo info:runningAppProcesses){
-            Log.e(TAG, "onStartCommand: "+info.processName +" pid:"+info.pid );
-        }
         executorService =Executors.newFixedThreadPool(4);
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                String packageCodePath = getPackageCodePath();
-                Log.e(TAG, packageCodePath);
-
-                final String command1 = "export CLASSPATH=" + packageCodePath ;
-                final String command2 = "app_process /system/bin com.pompip.touchserver.TouchEventServer h264 336";
-
-//                CommandResult run = Shell.SU.run(command1, command2);
-
-
-                try {
-                    process =Runtime.getRuntime().exec("su");
-
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                                String line;
-                                while ((line = errorReader.readLine()) != null) {
-                                    Log.e(TAG, line);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    });
-
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                                String line;
-                                while ((line = errorReader.readLine()) != null) {
-                                    Log.e(TAG, line);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    });
-
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try (BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                                outputStream.write(command1);
-                                outputStream.write("\n");
-                                outputStream.flush();
-                                outputStream.write(command2);
-                                outputStream.write("\n");
-                                outputStream.flush();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                killScreen();
+                startScreen();
             }
         });
 
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private void killScreen(){
+        CommandResult result = Shell.SU.run("ps -ef |grep TouchEventServer");
+        String stdout = result.getStdout();
+        Log.e(TAG,"ps:"+stdout);
+        Matcher matcher = Pattern.compile("\\d+").matcher(stdout);
+        if (matcher.find()){
+            String pid = matcher.group();
+            Shell.SU.run("kill "+pid);
+        };
+    }
+
+    private void startScreen(){
+        String packageCodePath = getPackageCodePath();
+        Log.e(TAG, packageCodePath);
+        final String command1 = "export CLASSPATH=" + packageCodePath ;
+        final String command2 = "app_process /system/bin com.pompip.touchserver.TouchEventServer h264 336";
+
+        CommandResult run = Shell.SU.run(command1, command2);
+    }
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.e(TAG, "onTaskRemoved: close" );
-        process.destroy();
-
-        executorService.shutdown();
         super.onTaskRemoved(rootIntent);
+        killScreen();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (process!=null){
-            process.destroy();
-        }
+        killScreen();
     }
 }
