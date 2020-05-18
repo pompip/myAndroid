@@ -9,18 +9,11 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.example.bonree.myapplication.R;
-import com.jaredrummler.android.shell.CommandResult;
-import com.jaredrummler.android.shell.Shell;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,11 +25,11 @@ import okhttp3.WebSocketListener;
 import okio.BufferedSource;
 import okio.ByteString;
 import okio.Okio;
-import okio.Source;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         TextView tv = findViewById(R.id.tv);
         tv.setText(getText());
-        final ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Intent service = new Intent(this,ScreenService.class);
+
+        Intent service = new Intent(this, ScreenService.class);
         startService(service);
         executorService.submit(new Runnable() {
             @Override
@@ -53,12 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 connect();
             }
         });
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                connectSocket();
-            }
-        });
+
 
     }
 
@@ -67,74 +55,79 @@ public class MainActivity extends AppCompatActivity {
         return "我没有被劫持,lala";
     }
 
-    private void connectSocket() {
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    private void connectSocket(WebSocket webSocket) {
         LocalSocket socket = new LocalSocket();
-        try {
+        BufferedSource buffer;
+        try{
             socket.connect(new LocalSocketAddress("singleTouch"));
+            buffer = Okio.buffer(Okio.source(socket.getInputStream()));
+        }catch (Exception e){
+            e.printStackTrace();
+            return;
+        }
 
-            Log.e(TAG, "bind success");
+        Log.e(TAG, "bind success");
+        while (true) {
 
-
-            BufferedSource buffer = Okio.buffer(Okio.source(socket.getInputStream()));
-
-            while (true){
-                byte[] byteString = buffer.readByteArray();
-                if (webSocket!=null){
-                    Log.e(TAG,"to:"+byteString.length);
+            try {
+                byte[] byteString = buffer.readByteArray(18);
+                if (webSocket != null) {
+                    Log.e(TAG, "to:" + byteString.length);
                     webSocket.send(new ByteString(byteString));
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+
     }
 
-    WebSocket webSocket;
-    void connect(){
+    void connect() {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://192.168.2.200:5000/echo").build();
-        webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
+        Request request = new Request.Builder().url("http://192.168.1.133:5000/echo").build();
+        WebSocket webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
                 super.onClosed(webSocket, code, reason);
-                Log.d(TAG, "onClosed() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
+                Log.e(TAG, "onClosed() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
             }
 
             @Override
             public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
                 super.onClosing(webSocket, code, reason);
-                Log.d(TAG, "onClosing() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
+                Log.e(TAG, "onClosing() called with: webSocket = [" + webSocket + "], code = [" + code + "], reason = [" + reason + "]");
             }
 
             @Override
             public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
-                Log.d(TAG, "onFailure() called with: webSocket = [" + webSocket + "], t = [" + t + "], response = [" + response + "]");
+                Log.e(TAG, "onFailure() called with: webSocket = [" + webSocket + "], t = [" + t + "], response = [" + response + "]");
             }
 
             @Override
             public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
                 super.onMessage(webSocket, text);
-                Log.d(TAG, "onMessage() called with: webSocket = [" + webSocket + "], text = [" + text + "]");
+                Log.e(TAG, "onMessage() called with: webSocket = [" + webSocket + "], text = [" + text + "]");
             }
 
             @Override
             public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
                 super.onMessage(webSocket, bytes);
-                Log.d(TAG, "onMessage() called with: webSocket = [" + webSocket + "], bytes = [" + bytes + "]");
+                Log.e(TAG, "onMessage() called with: webSocket = [" + webSocket + "], bytes = [" + bytes + "]");
             }
 
             @Override
-            public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
+            public void onOpen(@NotNull final WebSocket webSocket, @NotNull Response response) {
                 super.onOpen(webSocket, response);
-                Log.d(TAG, "onOpen() called with: webSocket = [" + webSocket + "], response = [" + response + "]");
+                Log.e(TAG, "onOpen() called with: webSocket = [" + webSocket + "], response = [" + response + "]");
+
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectSocket(webSocket);
+                    }
+                });
             }
         });
 

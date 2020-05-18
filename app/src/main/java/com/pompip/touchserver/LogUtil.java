@@ -17,7 +17,7 @@ public class LogUtil {
         StringBuilder sb2 = new StringBuilder();
         sb2.append("TouchServer_");
         sb2.append(str);
-        Log.w(sb2.toString(), str2);
+        Log.e(sb2.toString(), str2);
     }
 
     public static void d(String str) {
@@ -26,6 +26,6 @@ public class LogUtil {
         sb.append("TouchServer : ");
         sb.append(str);
         printStream.println(sb.toString());
-        Log.w(TAG, str);
+        Log.e(TAG, str);
     }
 }

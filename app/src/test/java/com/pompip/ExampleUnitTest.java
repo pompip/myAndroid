@@ -3,6 +3,14 @@ package com.pompip;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 
 /**
@@ -47,6 +55,34 @@ public class ExampleUnitTest {
             this.x = x;
             this.y = y;
         }
+    }
+
+    @Test
+    public void testWord(){
+
+
+
+        String scn = "i am   a student";
+        ArrayList<String> wordList = new ArrayList<>();
+        Matcher matcher = Pattern.compile("\\w+").matcher(scn);
+        while (matcher.find()){
+            wordList.add(matcher.group());
+        };
+        Collections.reverse(wordList);
+        StringBuilder builder = new StringBuilder();
+        for(String s:wordList){
+            builder.append(s).append(" ");
+        }
+        System.out.println(builder.toString().trim());
+
+
+
+
+
+
+
+
+        ;
     }
 }
 
