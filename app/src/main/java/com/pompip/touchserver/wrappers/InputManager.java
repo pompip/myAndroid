@@ -15,7 +15,7 @@ public final class InputManager {
     public InputManager(IInterface iInterface) {
         this.manager = iInterface;
         try {
-            this.injectInputEventMethod = iInterface.getClass().getMethod("injectInputEvent", new Class[]{InputEvent.class, Integer.TYPE});
+            this.injectInputEventMethod = iInterface.getClass().getMethod("injectInputEvent", InputEvent.class, Integer.TYPE);
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e);
         }
@@ -23,7 +23,7 @@ public final class InputManager {
 
     public boolean injectInputEvent(InputEvent inputEvent, int i) {
         try {
-            return ((Boolean) this.injectInputEventMethod.invoke(this.manager, new Object[]{inputEvent, Integer.valueOf(i)})).booleanValue();
+            return (Boolean) this.injectInputEventMethod.invoke(this.manager, new Object[]{inputEvent, i});
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new AssertionError(e);
         }

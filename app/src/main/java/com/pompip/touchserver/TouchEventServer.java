@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TouchEventServer {
     private static final String HOST = "singleTouch";
@@ -21,62 +22,62 @@ public class TouchEventServer {
     private final byte[] contentBytes = new byte[18];
     private final byte[] lenBytes = new byte[4];
     private EventInjector mEventInjector;
-    private  InputStream mInputStream;
-    private  ServiceManager mServiceManager;
+    private InputStream mInputStream;
+    private ServiceManager mServiceManager;
 
-    public static void main(String[] strArr) {
-        Log.e(TAG,"start");
-        int i = 0;
-        int i2 = 1000000;
-        if (strArr.length > 0) {
-            if ("screenshot".equals(strArr[0])) {
+    public static void main(String[] args) {
+        Log.e(TAG, "start :"+ Arrays.toString(args));
+        int width = 0;
+        int bitrate = 1000000;
+        if (args.length > 0) {
+            if ("screenshot".equals(args[0])) {
                 MODE = 1;
-                System.out.println("enable screenshot");
-            } else if ("h264".equals(strArr[0])) {
+                Log.e(TAG,"enable screenshot");
+            } else if ("h264".equals(args[0])) {
                 MODE = 2;
-                System.out.println("enable h264 ");
-                if (strArr.length > 1) {
-                    i = Integer.parseInt(strArr[1]);
+                Log.e(TAG,"enable h264 ");
+                if (args.length > 1) {
+                    width = Integer.parseInt(args[1]);
                 }
-                if (strArr.length > 2) {
+                if (args.length > 2) {
                     try {
-                        i2 = Integer.parseInt(strArr[2]);
+                        bitrate = Integer.parseInt(args[2]);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        i2 = 800000;
+                        bitrate = 800000;
                     }
                 }
             }
         }
         try {
-            new TouchEventServer(i, i2).loop();
+            new TouchEventServer(width, bitrate).loop();
         } catch (IOException e2) {
             e2.printStackTrace();
         }
     }
 
-    private  TouchEventServer(int r6,int r7) throws IOException{
+    private TouchEventServer(int width, int bitrate) throws IOException {
 
-        LogUtil.d("client bind start !");
-            LocalServerSocket r1 = new LocalServerSocket(HOST);
-            LocalSocket accept = r1.accept();
-            LogUtil.d("client bind SUCCESS !");
-            mServiceManager = new ServiceManager();
-            if (MODE == 1){
-
-                OutputStream outputStream = accept.getOutputStream();
-                Screenshot mScreenshot = new Screenshot(mServiceManager,outputStream);
-                Thread mThread = new Thread(mScreenshot,"Screenshot");
-                mThread.start();
-            }else if (MODE ==2){
-                FileDescriptor fileDescriptor = accept.getFileDescriptor();
-                ScreenEncoder screenEncoder = new ScreenEncoder(r6,r7,fileDescriptor);
-                Thread mThread = new Thread(screenEncoder,"H264");
-                mThread.start();
-            }else {
-                mInputStream = accept.getInputStream();
-                r1.close();
-            }
+        Log.e(TAG, "client bind start 1!");
+        LocalServerSocket localServerSocket = new LocalServerSocket(HOST);
+        LocalSocket accept = localServerSocket.accept();
+        Log.e(TAG, "client bind SUCCESS 1!");
+        mServiceManager = new ServiceManager();
+        if (MODE == 1) {
+            OutputStream outputStream = accept.getOutputStream();
+            Screenshot mScreenshot = new Screenshot(mServiceManager, outputStream);
+            Thread mThread = new Thread(mScreenshot, "Screenshot");
+            mThread.start();
+        } else if (MODE == 2) {
+            FileDescriptor fileDescriptor = accept.getFileDescriptor();
+            ScreenEncoder screenEncoder = new ScreenEncoder(width, bitrate, fileDescriptor);
+            Thread mThread = new Thread(screenEncoder, "H264");
+            mThread.start();
+            Log.e(TAG,"start Screen encoder");
+        } else {
+            mInputStream = accept.getInputStream();
+            localServerSocket.close();
+        }
 
 
     }
@@ -89,7 +90,7 @@ public class TouchEventServer {
         int i2 = 0;
         while (i2 < bArr.length && i2 != i) {
             try {
-                if (this.mInputStream==null){
+                if (this.mInputStream == null) {
                     continue;
                 }
                 int read = this.mInputStream.read(bArr, i2, i - i2);
@@ -108,6 +109,7 @@ public class TouchEventServer {
     }
 
     private void loop() {
+        Log.e(TAG,"start Loop");
         this.mEventInjector = new EventInjector(this.mServiceManager.getInputManager(), this.mServiceManager.getPowerManager());
         this.mEventInjector.checkScreenOn();
         while (true) {
@@ -120,7 +122,7 @@ public class TouchEventServer {
                         try {
                             handleEvent(readByte2);
                         } catch (Exception e) {
-                            LogUtil.d(Log.getStackTraceString(e));
+                            Log.e(TAG,Log.getStackTraceString(e));
                         }
                     }
                 }

@@ -14,7 +14,10 @@ public final class DisplayManager {
             Object invoke = this.manager.getClass().getMethod("getDisplayInfo", Integer.TYPE)
                     .invoke(this.manager, 0);
             Class cls = invoke.getClass();
-            return new int[]{cls.getDeclaredField("logicalWidth").getInt(invoke), cls.getDeclaredField("logicalHeight").getInt(invoke), cls.getDeclaredField("rotation").getInt(invoke)};
+            int logicalWidth = cls.getDeclaredField("logicalWidth").getInt(invoke);
+            int logicalHeight = cls.getDeclaredField("logicalHeight").getInt(invoke);
+            int rotation = cls.getDeclaredField("rotation").getInt(invoke);
+            return new int[]{logicalWidth,logicalHeight, rotation};
         } catch (Exception e) {
             throw new AssertionError(e);
         }

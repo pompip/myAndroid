@@ -29,29 +29,19 @@ public class Screenshot implements Runnable {
 
     public void run() {
         int[] displayInfo = this.mServiceManager.getDisplayManager().getDisplayInfo();
-        int i = displayInfo[0];
-        int i2 = displayInfo[1];
-        int i3 = displayInfo[2];
-        StringBuilder sb = new StringBuilder();
-        sb.append("width = ");
-        sb.append(i);
-        sb.append("，height = ");
-        sb.append(i2);
-        sb.append("，rotation = ");
-        sb.append(i3);
-        String sb2 = sb.toString();
-        Rect rect = new Rect(0, 0, i, i2);
+        int width = displayInfo[0];
+        int height = displayInfo[1];
+        int rotation = displayInfo[2];
+        String sb2 = "width = " +width +"，height = " +height +"，rotation = " +rotation;
+        Rect rect = new Rect(0, 0, width, height);
         try {
             writeBytes(sb2.getBytes());
-            int i4 = (int) (((float) i2) / ((((float) i) * 1.0f) / 360.0f));
-            PrintStream printStream = System.out;
-            StringBuilder sb3 = new StringBuilder();
-            sb3.append("screen cap width = 360, height = ");
-            sb3.append(i4);
-            printStream.println(sb3.toString());
+            height = (int) (((float) height) / ((((float) width) * 1.0f) / 360.0f));
+
+            System.out.println("screen cap width = 360, height = " +height);
             while (!this.mStopped) {
                 try {
-                    Bitmap screenBitmap = getScreenBitmap(rect, WIDTH, i4);
+                    Bitmap screenBitmap = getScreenBitmap(rect, WIDTH, height);
                     if (screenBitmap != null) {
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                         screenBitmap.compress(CompressFormat.JPEG, 80, byteArrayOutputStream);
@@ -73,11 +63,7 @@ public class Screenshot implements Runnable {
         allocate.put(bArr);
         allocate.flip();
         this.mOutputStream.write(allocate.array());
-        String str = TAG;
-        StringBuilder sb = new StringBuilder();
-        sb.append("writeBytes: bytes = ");
-        sb.append(bArr.length);
-        Log.i(str, sb.toString());
+        Log.i(TAG, "writeBytes: bytes = " +bArr.length);
     }
 
     private void stop() {
@@ -90,9 +76,9 @@ public class Screenshot implements Runnable {
                 this.mScreenshotMethod = getScreenshotMethod();
             }
             if (VERSION.SDK_INT >= 28) {
-                return (Bitmap) this.mScreenshotMethod.invoke(null, new Object[]{rect, Integer.valueOf(i), Integer.valueOf(i2), Integer.valueOf(0)});
+                return (Bitmap) this.mScreenshotMethod.invoke(null, rect, i, i2, 0);
             }
-            return (Bitmap) this.mScreenshotMethod.invoke(null, new Object[]{Integer.valueOf(i), Integer.valueOf(i2)});
+            return (Bitmap) this.mScreenshotMethod.invoke(null, i, i2);
         } catch (Exception e) {
             Log.e(TAG, "getScreenBitmap: ", e);
             throw new RuntimeException(e);
@@ -101,11 +87,11 @@ public class Screenshot implements Runnable {
 
     private Method getScreenshotMethod() throws Exception {
         if (VERSION.SDK_INT >= 28) {
-            return Class.forName("android.view.SurfaceControl").getMethod("screenshot", new Class[]{Rect.class, Integer.TYPE, Integer.TYPE, Integer.TYPE});
+            return Class.forName("android.view.SurfaceControl").getMethod("screenshot", Rect.class, Integer.TYPE, Integer.TYPE, Integer.TYPE);
         } else if (VERSION.SDK_INT >= 18) {
-            return Class.forName("android.view.SurfaceControl").getMethod("screenshot", new Class[]{Integer.TYPE, Integer.TYPE});
+            return Class.forName("android.view.SurfaceControl").getMethod("screenshot", Integer.TYPE, Integer.TYPE);
         } else {
-            return Class.forName("android.view.Surface").getMethod("screenshot", new Class[]{Integer.TYPE, Integer.TYPE});
+            return Class.forName("android.view.Surface").getMethod("screenshot", Integer.TYPE, Integer.TYPE);
         }
     }
 }

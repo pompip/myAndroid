@@ -14,7 +14,7 @@ public final class ServiceManager {
 
     public ServiceManager() {
         try {
-            this.getServiceMethod = Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", new Class[]{String.class});
+            this.getServiceMethod = Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", String.class);
         } catch (Exception e) {
             throw new AssertionError(e);
         }
@@ -23,10 +23,8 @@ public final class ServiceManager {
     private IInterface getService(String str, String str2) {
         try {
             IBinder iBinder = (IBinder) this.getServiceMethod.invoke(null, new Object[]{str});
-            StringBuilder sb = new StringBuilder();
-            sb.append(str2);
-            sb.append("$Stub");
-            return (IInterface) Class.forName(sb.toString()).getMethod("asInterface", new Class[]{IBinder.class}).invoke(null, new Object[]{iBinder});
+            String sb = str2 +"$Stub";
+            return (IInterface) Class.forName(sb).getMethod("asInterface", IBinder.class).invoke(null, iBinder);
         } catch (Exception e) {
             throw new AssertionError(e);
         }

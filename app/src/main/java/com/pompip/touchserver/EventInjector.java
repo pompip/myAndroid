@@ -46,7 +46,6 @@ public class EventInjector {
         this.mInputManager.injectInputEvent(obtain, 0);
     }
 
-    /* access modifiers changed from: 0000 */
     public boolean injectKeycode(int i) {
         long uptimeMillis = SystemClock.uptimeMillis();
         if (!injectKeyEvent(uptimeMillis, 0, i) || !injectKeyEvent(uptimeMillis, 1, i)) {
@@ -66,7 +65,6 @@ public class EventInjector {
         pointerCoords2.setAxisValue(9, f2);
     }
 
-    /* access modifiers changed from: 0000 */
     public boolean injectScroll(int i, int i2, float f, float f2) {
         long uptimeMillis = SystemClock.uptimeMillis();
         setPointerCoords(i, i2);
