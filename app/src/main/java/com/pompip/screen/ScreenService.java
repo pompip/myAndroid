@@ -108,14 +108,10 @@ public class ScreenService extends Service {
 
             try {
                 int len = buffer.readInt();
-                buffer.readIntLe();
-
                 if (webSocket != null) {
                     Log.e(TAG, "to:" + len);
                     byte[] byteString = buffer.readByteArray(len);
-
                     webSocket.send(ByteString.of(byteString));
-
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -128,6 +124,7 @@ public class ScreenService extends Service {
     void connect() {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
         Request request = new Request.Builder().url("http://java.asuscomm.com:6001/echo").build();
+
         WebSocket webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
