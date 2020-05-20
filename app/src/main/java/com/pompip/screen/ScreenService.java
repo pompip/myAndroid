@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.jaredrummler.android.shell.CommandResult;
 import com.jaredrummler.android.shell.Shell;
+import com.pompip.touchserver.TouchEventServer;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +72,8 @@ public class ScreenService extends Service {
             String pid = matcher.group();
             CommandResult run = Shell.SU.run("kill " + pid);
             Log.e(TAG, "killScreen: " +run.getStdout());
+        }else{
+
         };
 
 
@@ -92,7 +95,7 @@ public class ScreenService extends Service {
         BufferedSource buffer;
         try{
 
-            socket.connect(new LocalSocketAddress("singleTouch"));
+            socket.connect(new LocalSocketAddress(TouchEventServer.HOST));
             Log.e(TAG, "connect success :"+socket.isConnected());
             buffer = Okio.buffer(Okio.source(socket.getInputStream()));
         }catch (Exception e){
@@ -104,10 +107,15 @@ public class ScreenService extends Service {
         while (true) {
 
             try {
-                byte[] byteString = buffer.readByteArray(18);
+                int len = buffer.readInt();
+                buffer.readIntLe();
+
                 if (webSocket != null) {
-                    Log.e(TAG, "to:" + byteString.length);
-                    webSocket.send(new ByteString(byteString));
+                    Log.e(TAG, "to:" + len);
+                    byte[] byteString = buffer.readByteArray(len);
+
+                    webSocket.send(ByteString.of(byteString));
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -119,7 +127,7 @@ public class ScreenService extends Service {
 
     void connect() {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://192.168.2.200:5000/echo").build();
+        Request request = new Request.Builder().url("http://java.asuscomm.com:6001/echo").build();
         WebSocket webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
@@ -149,6 +157,7 @@ public class ScreenService extends Service {
             public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
                 super.onMessage(webSocket, bytes);
                 Log.e(TAG, "onMessage() called with: webSocket = [" + webSocket + "], bytes = [" + bytes + "]");
+
             }
 
             @Override

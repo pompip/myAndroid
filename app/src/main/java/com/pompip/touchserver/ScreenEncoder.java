@@ -94,13 +94,13 @@ public class ScreenEncoder implements Runnable {
         BufferInfo bufferInfo = new BufferInfo();
         ByteBuffer[] byteBufferArr = null;
         do {
-            int dequeueOutputBuffer = this.mCodec.dequeueOutputBuffer(bufferInfo, -1);
+            int dequeueOutputBuffer = mCodec.dequeueOutputBuffer(bufferInfo, -1);
             if (dequeueOutputBuffer >= 0) {
                 if (byteBufferArr == null) {
-                    byteBufferArr = this.mCodec.getOutputBuffers();
+                    byteBufferArr = mCodec.getOutputBuffers();
                 }
                 boolean writeFd = writeFd(byteBufferArr[dequeueOutputBuffer]);
-                this.mCodec.releaseOutputBuffer(dequeueOutputBuffer, false);
+                mCodec.releaseOutputBuffer(dequeueOutputBuffer, false);
                 if (!writeFd) {
                     return;
                 }
@@ -109,7 +109,7 @@ public class ScreenEncoder implements Runnable {
                 byteBufferArr = null;
             } else if (dequeueOutputBuffer == -2) {
                 Log.w(TAG, "MediaCodec.INFO_OUTPUT_FORMAT_CHANGED");
-                MediaFormat outputFormat = this.mCodec.getOutputFormat();
+                MediaFormat outputFormat = mCodec.getOutputFormat();
                 String sb = "output width: " +
                         outputFormat.getInteger("width") +
                         " height : " +
@@ -125,11 +125,11 @@ public class ScreenEncoder implements Runnable {
 
     private boolean writeFd(ByteBuffer byteBuffer) {
         int remaining = byteBuffer.remaining();
-        this.mLenBuffer.clear();
-        this.mLenBuffer.putInt(remaining);
-        this.mLenBuffer.flip();
+        mLenBuffer.clear();
+        mLenBuffer.putInt(remaining);
+        mLenBuffer.flip();
         try {
-            Os.write(this.mFd, this.mLenBuffer);
+            Os.write(mFd, this.mLenBuffer);
             while (remaining > 0) {
                 try {
                     remaining -= Os.write(this.mFd, byteBuffer);
@@ -148,10 +148,14 @@ public class ScreenEncoder implements Runnable {
     private int[] getDisplaySize() {
         try {
             IBinder iBinder = (IBinder) Class.forName("android.os.ServiceManager")
-                    .getDeclaredMethod("getService", String.class).invoke(null, "display");
+                    .getDeclaredMethod("getService", String.class)
+                    .invoke(null, "display");
             IInterface iInterface = (IInterface) Class.forName("android.hardware.display.IDisplayManager$Stub")
-                    .getMethod("asInterface", IBinder.class).invoke(null, iBinder);
-            Object invoke = iInterface.getClass().getMethod("getDisplayInfo", Integer.TYPE).invoke(iInterface, 0);
+                    .getMethod("asInterface", IBinder.class)
+                    .invoke(null, iBinder);
+            Object invoke = iInterface.getClass()
+                    .getMethod("getDisplayInfo", Integer.TYPE)
+                    .invoke(iInterface, 0);
             Class cls = invoke.getClass();
             int logicalWidth = cls.getDeclaredField("logicalWidth").getInt(invoke);
             int logicalHeight = cls.getDeclaredField("logicalHeight").getInt(invoke);

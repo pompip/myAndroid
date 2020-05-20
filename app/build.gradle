@@ -57,4 +57,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'
     implementation 'org.conscrypt:conscrypt-android:2.4.0'
     implementation 'com.squareup.okio:okio:2.6.0'
+
+    implementation ('io.socket:socket.io-client:1.0.0') {
+        // excluding org.json which is provided by Android
+        exclude group: 'org.json', module: 'json'
+    }
 }

@@ -23,9 +23,6 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(getText());
 
         startService(new Intent(this, ScreenService.class));
-
-
-
     }
 
 

@@ -186,18 +186,24 @@ public class ExampleUnitTest {
 
 
 
-        String scn = "i am   a student";
-        ArrayList<String> wordList = new ArrayList<>();
-        Matcher matcher = Pattern.compile("\\w+").matcher(scn);
-        while (matcher.find()){
-            wordList.add(matcher.group());
-        };
-        Collections.reverse(wordList);
-        StringBuilder builder = new StringBuilder();
-        for(String s:wordList){
-            builder.append(s).append(" ");
+        int m = 5;
+        int[][] number = new int[m+1][m+1];
+        //m个苹果放在一个篮子里面只有一种
+        for(int i =0;i<m+1;i++){
+            number[i][1] = 1;
         }
-        System.out.println(builder.toString().trim());
+        for(int i=1;i<m+1;i++){
+            for(int j=2;j<i+1;j++){
+                //既然篮子都不能为空,分两种情况，篮子最少的苹果数量为1；篮子最少的苹果数量起码是2。这两种情况去分析
+                number[i][j] = number[i-1][j-1]+number[i-j][j];
+            }
+        }
+        int sum = 0;
+        for(int j=1;j<m+1;j++){
+            sum+=number[m][j];
+        }
+        System.out.println(sum)
+
 
 
 

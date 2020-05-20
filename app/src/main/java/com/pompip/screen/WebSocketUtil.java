@@ -56,7 +56,7 @@ public class WebSocketUtil {
 
     public static WebSocket create(){
         OkHttpClient client = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://localhost:5000/echo").build();
+        Request request = new Request.Builder().url("http://java.asuscomm.com:601/echo").build();
         return client.newWebSocket(request,listener);
 
     }

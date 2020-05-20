@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class TouchEventServer {
-    private static final String HOST = "singleTouch";
+    public static final String HOST = "recordDisplay";
     private static int MODE = 0;
     private static final String TAG = "TouchEventServer";
     private static final byte TYPE_KEYCODE = 1;
