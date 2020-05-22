@@ -25,11 +25,11 @@ public class TouchEventServer {
     private EventInjector mEventInjector;
     private InputStream mInputStream;
     private ServiceManager mServiceManager;
-
+    private static int width = 0;
+    private static int bitrate = 1000000;
     public static void main(String[] args) {
         Log.e(TAG, "start :"+ Arrays.toString(args));
-        int width = 0;
-        int bitrate = 1000000;
+
         if (args.length > 0) {
             if ("screenshot".equals(args[0])) {
                 MODE = 1;
@@ -51,14 +51,15 @@ public class TouchEventServer {
             }
         }
         try {
-            new TouchEventServer(width, bitrate).loop();
+            TouchEventServer touchEventServer = new TouchEventServer();
+            touchEventServer.init();
+            touchEventServer.loop();
         } catch (IOException e2) {
             e2.printStackTrace();
         }
     }
 
-    private TouchEventServer(int width, int bitrate) throws IOException {
-
+    private void init() throws IOException{
         Log.e(TAG, "client bind start 1!");
         LocalSocket accept = new LocalSocket();
         accept.connect(new LocalSocketAddress(TouchEventServer.HOST));
@@ -81,8 +82,6 @@ public class TouchEventServer {
             mInputStream = accept.getInputStream();
             accept.close();
         }
-
-
     }
 
 
