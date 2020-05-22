@@ -1,12 +1,10 @@
 package com.pompip.screen;
 
-import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Intent;
+import android.net.LocalServerSocket;
 import android.net.LocalSocket;
-import android.net.LocalSocketAddress;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.jaredrummler.android.shell.CommandResult;
@@ -16,13 +14,7 @@ import com.pompip.touchserver.TouchEventServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -39,6 +31,9 @@ import okio.Okio;
 
 public class ScreenService extends Service {
     private static final String TAG = "ScreenService";
+    private WebSocket webSocket;
+    private LocalServerSocket localServerSocket;
+
     public ScreenService() {
     }
     ExecutorService executorService ;
@@ -49,18 +44,38 @@ public class ScreenService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        try {
+            localServerSocket = new LocalServerSocket(TouchEventServer.HOST);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         executorService =Executors.newFixedThreadPool(4);
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 killScreen();
-                startScreen();
-                connect();
+                createLocalSocket();
+
             }
         });
 
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                connect();
+            }
+        });
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+//        killScreen();
+//        if (webSocket!=null){
+//            webSocket.close(1,"close");
+//        }
+
     }
 
     private void killScreen(){
@@ -80,22 +95,24 @@ public class ScreenService extends Service {
 
     }
 
-    private void startScreen(){
+    private void startScreenService(){
         String packageCodePath = getPackageCodePath();
         Log.e(TAG, packageCodePath);
         final String command1 = "export CLASSPATH=" + packageCodePath ;
-        final String command2 = "app_process /system/bin com.pompip.touchserver.TouchEventServer h264 400 1000";
+        final String command2 = "app_process /system/bin com.pompip.touchserver.TouchEventServer h264 400 1000000";
 
         CommandResult run = Shell.SU.run(command1, command2);
         Log.e(TAG, "startScreen: "+run.getStdout() );
 
     }
-    private void connectSocket(WebSocket webSocket) {
-        LocalSocket socket = new LocalSocket();
+    private void createLocalSocket() {
         BufferedSource buffer;
+        LocalSocket socket;
         try{
 
-            socket.connect(new LocalSocketAddress(TouchEventServer.HOST));
+
+             socket = localServerSocket.accept();
+
             Log.e(TAG, "connect success :"+socket.isConnected());
             buffer = Okio.buffer(Okio.source(socket.getInputStream()));
         }catch (Exception e){
@@ -104,8 +121,7 @@ public class ScreenService extends Service {
         }
 
 
-        while (true) {
-
+        while (socket.isConnected()) {
             try {
                 int len = buffer.readInt();
                 if (webSocket != null) {
@@ -123,9 +139,9 @@ public class ScreenService extends Service {
 
     void connect() {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://java.asuscomm.com:6001/echo").build();
+        Request request = new Request.Builder().url("http://192.168.2.200:5000/echo").build();
 
-        WebSocket webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
+        webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
                 super.onClosed(webSocket, code, reason);
@@ -165,11 +181,12 @@ public class ScreenService extends Service {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        connectSocket(webSocket);
+                        startScreenService();
                     }
                 });
             }
         });
+
 
     }
 }

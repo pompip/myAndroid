@@ -2,6 +2,7 @@ package com.pompip.touchserver;
 
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
+import android.net.LocalSocketAddress;
 import android.util.Log;
 
 import com.pompip.touchserver.wrappers.ServiceManager;
@@ -59,8 +60,10 @@ public class TouchEventServer {
     private TouchEventServer(int width, int bitrate) throws IOException {
 
         Log.e(TAG, "client bind start 1!");
-        LocalServerSocket localServerSocket = new LocalServerSocket(HOST);
-        LocalSocket accept = localServerSocket.accept();
+        LocalSocket accept = new LocalSocket();
+        accept.connect(new LocalSocketAddress(TouchEventServer.HOST));
+
+
         Log.e(TAG, "client bind SUCCESS 1!");
         mServiceManager = new ServiceManager();
         if (MODE == 1) {
@@ -76,7 +79,7 @@ public class TouchEventServer {
             Log.e(TAG,"start Screen encoder");
         } else {
             mInputStream = accept.getInputStream();
-            localServerSocket.close();
+            accept.close();
         }
 
 
