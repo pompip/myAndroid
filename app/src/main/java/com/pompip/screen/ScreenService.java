@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -36,10 +37,17 @@ public class ScreenService extends Service {
 
     public ScreenService() {
     }
-    ExecutorService executorService ;
+
+    private ExecutorService executorService;
+
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
     }
 
     @Override
@@ -49,12 +57,13 @@ public class ScreenService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        executorService =Executors.newFixedThreadPool(4);
+        executorService = Executors.newFixedThreadPool(8);
+        killScreen();
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                killScreen();
-                createLocalSocket();
+
+
 
             }
         });
@@ -63,6 +72,13 @@ public class ScreenService extends Service {
             @Override
             public void run() {
                 connect();
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                startScreenService();
+                createLocalSocket();
             }
         });
         return super.onStartCommand(intent, flags, startId);
@@ -78,44 +94,48 @@ public class ScreenService extends Service {
 
     }
 
-    private void killScreen(){
+    private void killScreen() {
+        Log.e(TAG, "killScreen start " );
         CommandResult result = Shell.SU.run("ps -ef |grep TouchEventServer");
-        String stdout = result.getStdout();
 
-        Matcher matcher = Pattern.compile("\\d+").matcher(stdout);
-        if (matcher.find()){
-            String pid = matcher.group();
-            CommandResult run = Shell.SU.run("kill " + pid);
-            Log.e(TAG, "killScreen: " +run.getStdout());
-        }else{
+        List<String> stdoutList = result.stdout;
+        for (String stdout:stdoutList){
+            Log.e(TAG,stdout);
+            Matcher matcher = Pattern.compile("\\d+").matcher(stdout);
+            if (matcher.find()) {
+                String pid = matcher.group();
+                CommandResult run = Shell.SU.run("kill " + pid);
+                Log.e(TAG, "killScreen: " + run.getStdout());
+            } else {
 
-        };
+            }
+        }
 
 
 
     }
 
-    private void startScreenService(){
+    private void startScreenService() {
         String packageCodePath = getPackageCodePath();
         Log.e(TAG, packageCodePath);
-        final String command1 = "export CLASSPATH=" + packageCodePath ;
+        final String command1 = "export CLASSPATH=" + packageCodePath;
         final String command2 = "app_process /system/bin com.pompip.touchserver.TouchEventServer h264 400 1000000";
 
         CommandResult run = Shell.SU.run(command1, command2);
-        Log.e(TAG, "startScreen: "+run.getStdout() );
+        Log.e(TAG, "startScreenService: " + run.getStdout());
 
     }
+
     private void createLocalSocket() {
         BufferedSource buffer;
         LocalSocket socket;
-        try{
+        try {
+            Log.e(TAG, "connect waiting :" );
+            socket = localServerSocket.accept();
 
-
-             socket = localServerSocket.accept();
-
-            Log.e(TAG, "connect success :"+socket.isConnected());
+            Log.e(TAG, "connect success :" + socket.isConnected());
             buffer = Okio.buffer(Okio.source(socket.getInputStream()));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -124,10 +144,19 @@ public class ScreenService extends Service {
         while (socket.isConnected()) {
             try {
                 int len = buffer.readInt();
+                Log.e(TAG, "to:" + len);
+                final byte[] byteString = buffer.readByteArray(len);
                 if (webSocket != null) {
-                    Log.e(TAG, "to:" + len);
-                    byte[] byteString = buffer.readByteArray(len);
                     webSocket.send(ByteString.of(byteString));
+                }
+                if (dataListener!=null){
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataListener.sendBytes(byteString);
+                        }
+                    });
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -139,7 +168,7 @@ public class ScreenService extends Service {
 
     void connect() {
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
-        Request request = new Request.Builder().url("http://192.168.2.200:5000/echo").build();
+        Request request = new Request.Builder().url("http://java.asuscomm.com:6001/echo").build();
 
         webSocket = okHttpClient.newWebSocket(request, new WebSocketListener() {
             @Override
@@ -178,15 +207,14 @@ public class ScreenService extends Service {
                 super.onOpen(webSocket, response);
                 Log.e(TAG, "onOpen() called with: webSocket = [" + webSocket + "], response = [" + response + "]");
 
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        startScreenService();
-                    }
-                });
+
             }
         });
+    }
 
 
+    static DataListener dataListener;
+    public static void setListener(DataListener dataListener){
+        ScreenService.dataListener = dataListener;
     }
 }

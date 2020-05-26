@@ -3,7 +3,7 @@
     package="com.example.bonree.myapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,13 +11,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
         android:theme="@style/AppTheme">
         <service
             android:name="com.pompip.screen.ScreenService"
             android:enabled="true"
             android:exported="true"></service>
 
-        <activity android:name="com.pompip.screen.MainActivity">
+        <activity android:name="com.pompip.screen.MainActivity" android:hardwareAccelerated="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
