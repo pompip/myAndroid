@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.example.bonree.myapplication.R;
+import com.pompip.media.MediaCodecWrapper;
 import com.pompip.screen.DataListener;
 import com.pompip.screen.ScreenService;
 
@@ -114,6 +115,12 @@ public class FloatingView extends FrameLayout {
                     e.printStackTrace();
                 }
 
+//                try {
+//                    MediaCodecWrapper mediaCodecWrapper = MediaCodecWrapper.fromVideoFormat(MediaFormat.createVideoFormat("video/avc", 400, 600), new Surface(surface));
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
 
             @Override

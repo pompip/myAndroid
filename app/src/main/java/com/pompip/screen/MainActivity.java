@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaPlayer;
+import android.net.TrafficStats;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -39,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final FloatingView floatingView = new FloatingView(MainActivity.this);
-
-
-
                 floatingView.show();
             }
 
@@ -50,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         executorService = Executors.newFixedThreadPool(4);
 
         startService(new Intent(this, ScreenService.class));
+
+
     }
 
 
