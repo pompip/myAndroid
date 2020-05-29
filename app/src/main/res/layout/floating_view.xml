@@ -3,12 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent">
-    <TextView
-        android:layout_width="match_parent"
-        android:text="this is a floating view"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:layout_height="wrap_content"/>
     <TextureView
         android:id="@+id/texture_view"
         android:layout_width="match_parent"

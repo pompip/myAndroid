@@ -92,22 +92,20 @@ public class ScreenEncoder implements Runnable {
 
     private void encode() {
         BufferInfo bufferInfo = new BufferInfo();
-        ByteBuffer[] byteBufferArr = null;
+//        ByteBuffer[] byteBufferArr = null;
         do {
             int dequeueOutputBuffer = mCodec.dequeueOutputBuffer(bufferInfo, -1);
             if (dequeueOutputBuffer >= 0) {
-                if (byteBufferArr == null) {
-                    byteBufferArr = mCodec.getOutputBuffers();
-                }
-                boolean writeFd = writeFd(byteBufferArr[dequeueOutputBuffer]);
+                ByteBuffer byteBuffer = mCodec.getOutputBuffer(dequeueOutputBuffer);
+                boolean writeFd = writeFd(byteBuffer);
                 mCodec.releaseOutputBuffer(dequeueOutputBuffer, false);
                 if (!writeFd) {
                     return;
                 }
-            } else if (dequeueOutputBuffer == -3) {
+            } else if (dequeueOutputBuffer == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
                 Log.w(TAG, "MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED");
-                byteBufferArr = null;
-            } else if (dequeueOutputBuffer == -2) {
+
+            } else if (dequeueOutputBuffer == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 Log.w(TAG, "MediaCodec.INFO_OUTPUT_FORMAT_CHANGED");
                 MediaFormat outputFormat = mCodec.getOutputFormat();
                 String sb = "output width: " +

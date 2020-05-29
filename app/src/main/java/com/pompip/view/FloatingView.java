@@ -6,6 +6,7 @@ import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -51,9 +52,13 @@ public class FloatingView extends FrameLayout {
         mParams.x = 0;
         mParams.y = 100;
         //总是出现在应用程序窗口之上
-        mParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        }else {
+            mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
         //设置图片格式，效果为背景透明
-        mParams.format = PixelFormat.RGBA_8888;
+        mParams.format = PixelFormat.RGB_888;
         mParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR |
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH|WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
@@ -147,14 +152,14 @@ public class FloatingView extends FrameLayout {
     public boolean onFrame(byte[] buf, int offset, int length) {
         Log.e("Media", "onFrame Thread:" + Thread.currentThread().getId());
         // Get input buffer index
-        ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
-        int inputBufferIndex = mCodec.dequeueInputBuffer(100);
+//        ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
+        int inputBufferIndex = mCodec.dequeueInputBuffer(-1);
 
         Log.e("Media", "onFrame index:" + inputBufferIndex);
         if (inputBufferIndex >= 0) {
-                         ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
-//            ByteBuffer inputBuffer = mCodec.getInputBuffer(inputBufferIndex);
-//                         inputBuffer.clear();
+//                         ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
+            ByteBuffer inputBuffer = mCodec.getInputBuffer(inputBufferIndex);
+                         inputBuffer.clear();
             inputBuffer.put(buf, offset, length);
             mCodec.queueInputBuffer(inputBufferIndex, 0, length, mCount
                     * TIME_INTERNAL, 0);
