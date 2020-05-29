@@ -6,14 +6,14 @@ public final class DisplayManager {
     private final IInterface manager;
 
     public DisplayManager(IInterface iInterface) {
-        this.manager = iInterface;
+        manager = iInterface;
     }
 
     public int[] getDisplayInfo() {
         try {
-            Object invoke = this.manager.getClass().getMethod("getDisplayInfo", Integer.TYPE)
-                    .invoke(this.manager, 0);
-            Class cls = invoke.getClass();
+            Object invoke = manager.getClass().getMethod("getDisplayInfo", Integer.TYPE)
+                    .invoke(manager, 0);
+            Class<?> cls = invoke.getClass();
             int logicalWidth = cls.getDeclaredField("logicalWidth").getInt(invoke);
             int logicalHeight = cls.getDeclaredField("logicalHeight").getInt(invoke);
             int rotation = cls.getDeclaredField("rotation").getInt(invoke);

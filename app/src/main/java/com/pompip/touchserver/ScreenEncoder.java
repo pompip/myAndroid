@@ -22,7 +22,7 @@ public class ScreenEncoder implements Runnable {
     private final FileDescriptor mFd;
     private ByteBuffer mLenBuffer = ByteBuffer.allocate(4);
     private boolean mRecording;
-    private VirtualDisplay mVirtualDisplay;
+    private VirtualDisplayWrapper mVirtualDisplay;
 
     ScreenEncoder(int width, int bitrate, FileDescriptor fileDescriptor) throws IOException {
         this.mFd = fileDescriptor;
@@ -55,7 +55,7 @@ public class ScreenEncoder implements Runnable {
         mediaFormat.setInteger("height", height);
         this.mCodec = MediaCodec.createEncoderByType("video/avc");
         this.mCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-        this.mVirtualDisplay = VirtualDisplay.createVirtualDisplay("recordScreen", this.mCodec.createInputSurface(),
+        this.mVirtualDisplay = VirtualDisplayWrapper.createVirtualDisplay("recordScreen", this.mCodec.createInputSurface(),
                 new Rect(0, 0, iArr[0], iArr[1]), new Rect(0, 0, width, height));
     }
 

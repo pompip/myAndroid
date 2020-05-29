@@ -14,16 +14,16 @@ public final class ServiceManager {
 
     public ServiceManager() {
         try {
-            this.getServiceMethod = Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", String.class);
+            getServiceMethod = Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", String.class);
         } catch (Exception e) {
             throw new AssertionError(e);
         }
     }
 
-    private IInterface getService(String str, String str2) {
+    private IInterface getService(String serviceName, String serviceClassName) {
         try {
-            IBinder iBinder = (IBinder) this.getServiceMethod.invoke(null, new Object[]{str});
-            String sb = str2 +"$Stub";
+            IBinder iBinder = (IBinder) getServiceMethod.invoke(null, serviceName);
+            String sb = serviceClassName +"$Stub";
             return (IInterface) Class.forName(sb).getMethod("asInterface", IBinder.class).invoke(null, iBinder);
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -31,23 +31,26 @@ public final class ServiceManager {
     }
 
     public DisplayManager getDisplayManager() {
-        if (this.displayManager == null) {
-            this.displayManager = new DisplayManager(getService("display", "android.hardware.display.IDisplayManager"));
+        if (displayManager == null) {
+            displayManager = new DisplayManager(getService("display",
+                    "android.hardware.display.IDisplayManager"));
         }
-        return this.displayManager;
+        return displayManager;
     }
 
     public InputManager getInputManager() {
-        if (this.inputManager == null) {
-            this.inputManager = new InputManager(getService("input", "android.hardware.input.IInputManager"));
+        if (inputManager == null) {
+            inputManager = new InputManager(getService("input",
+                    "android.hardware.input.IInputManager"));
         }
-        return this.inputManager;
+        return inputManager;
     }
 
     public PowerManager getPowerManager() {
-        if (this.powerManager == null) {
-            this.powerManager = new PowerManager(getService("power", "android.os.IPowerManager"));
+        if (powerManager == null) {
+            powerManager = new PowerManager(getService("power",
+                    "android.os.IPowerManager"));
         }
-        return this.powerManager;
+        return powerManager;
     }
 }

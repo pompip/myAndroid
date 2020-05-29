@@ -8,19 +8,19 @@ import android.view.Surface;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class VirtualDisplay {
+public class VirtualDisplayWrapper {
     private static final String TAG = "VirtualDisplay";
     private IBinder mDisplayToken;
     private Surface mSurface;
     private Class<?> mSurfaceControlCls;
 
-    public VirtualDisplay(Class<?> cls, IBinder iBinder, Surface surface) {
+    public VirtualDisplayWrapper(Class<?> cls, IBinder iBinder, Surface surface) {
         this.mSurfaceControlCls = cls;
         this.mDisplayToken = iBinder;
         this.mSurface = surface;
     }
 
-    public static VirtualDisplay createVirtualDisplay(String str, Surface surface, Rect rect, Rect rect2) {
+    public static VirtualDisplayWrapper createVirtualDisplay(String str, Surface surface, Rect rect, Rect rect2) {
         Method method = null;
         try {
             Class<?> cls = Class.forName("android.view.SurfaceControl");
@@ -36,7 +36,7 @@ public class VirtualDisplay {
             method4.invoke(null, iBinder, 0, rect, rect2);
             method5.invoke(null, iBinder, 0);
             method.invoke(null);
-            return new VirtualDisplay(cls, iBinder, surface);
+            return new VirtualDisplayWrapper(cls, iBinder, surface);
         } catch (Exception e) {
             Log.e(TAG, "createVirtualDisplay: ", e);
             return null;

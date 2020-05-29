@@ -59,14 +59,6 @@ public class ScreenService extends Service {
         }
         executorService = Executors.newFixedThreadPool(8);
         killScreen();
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-
-
-
-            }
-        });
 
         executorService.submit(new Runnable() {
             @Override
@@ -106,8 +98,6 @@ public class ScreenService extends Service {
                 String pid = matcher.group();
                 CommandResult run = Shell.SU.run("kill " + pid);
                 Log.e(TAG, "killScreen: " + run.getStdout());
-            } else {
-
             }
         }
 
