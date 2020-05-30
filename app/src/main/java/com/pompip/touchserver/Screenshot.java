@@ -10,7 +10,6 @@ import com.pompip.touchserver.wrappers.ServiceManager;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
@@ -22,8 +21,8 @@ public class Screenshot implements Runnable {
     private ServiceManager mServiceManager;
     private boolean mStopped = false;
 
-    Screenshot(ServiceManager serviceManager, OutputStream outputStream) {
-        this.mServiceManager = serviceManager;
+    Screenshot(OutputStream outputStream) {
+        this.mServiceManager = ServiceManager.getInstance();
         this.mOutputStream = outputStream;
     }
 

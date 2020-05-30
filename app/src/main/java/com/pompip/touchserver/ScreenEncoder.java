@@ -4,11 +4,10 @@ import android.graphics.Rect;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaFormat;
-import android.os.IBinder;
-import android.os.IInterface;
 import android.system.Os;
 import android.util.Log;
 
+import com.pompip.touchserver.wrappers.ServiceManager;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -26,22 +25,22 @@ public class ScreenEncoder implements Runnable {
 
     ScreenEncoder(int width, int bitrate, FileDescriptor fileDescriptor) throws IOException {
         this.mFd = fileDescriptor;
-        this.mDisplaySize = getDisplaySize();
-        if (this.mDisplaySize != null) {
-            if (width == 0 || width > this.mDisplaySize[0]) {
-                width = DEFAULT_WIDTH;
-            }
-            int round = Math.round((((float) this.mDisplaySize[1]) * ((float) width)) / ((float) this.mDisplaySize[0]));
-            if (round % 2 == 1) {
-                round++;
-            }
-            String sb = "out video width = " +width +",height = " +round +",bitrate = " +bitrate;
-            Log.e(TAG,sb);
-            configure(width, round, bitrate, this.mDisplaySize);
+        this.mDisplaySize = ServiceManager.getInstance().getDisplayManager().getDisplayInfo();
+
+        if (width == 0 || width > this.mDisplaySize[0]) {
+            width = DEFAULT_WIDTH;
         }
+        int round = Math.round((((float) this.mDisplaySize[1]) * ((float) width)) / ((float) this.mDisplaySize[0]));
+        if (round % 2 == 1) {
+            round++;
+        }
+        String sb = "out video width = " + width + ",height = " + round + ",bitrate = " + bitrate;
+        Log.e(TAG, sb);
+        configure(width, round, bitrate, this.mDisplaySize);
     }
 
-    private void configure(int width, int height, int bitrate, int[] iArr) throws IOException {
+
+    private void configure(int width, int height, int bitrate, int[] displaySize) throws IOException {
         MediaFormat mediaFormat = new MediaFormat();
         mediaFormat.setString("mime", "video/avc");
         mediaFormat.setInteger("bitrate", bitrate);
@@ -56,7 +55,8 @@ public class ScreenEncoder implements Runnable {
         this.mCodec = MediaCodec.createEncoderByType("video/avc");
         this.mCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         this.mVirtualDisplay = VirtualDisplayWrapper.createVirtualDisplay("recordScreen", this.mCodec.createInputSurface(),
-                new Rect(0, 0, iArr[0], iArr[1]), new Rect(0, 0, width, height));
+                new Rect(0, 0, displaySize[0], displaySize[1]), new Rect(0, 0, width, height));
+
     }
 
     public synchronized void stopRecord() {
@@ -72,7 +72,7 @@ public class ScreenEncoder implements Runnable {
                     this.mDisplaySize[0] +
                     "，height = " +
                     this.mDisplaySize[1];
-            Log.e(TAG,"info = " +info);
+            Log.e(TAG, "info = " + info);
             writeFd(ByteBuffer.wrap(info.getBytes()));
         }
         this.mCodec.start();
@@ -143,24 +143,5 @@ public class ScreenEncoder implements Runnable {
         }
     }
 
-    private int[] getDisplaySize() {
-        try {
-            IBinder iBinder = (IBinder) Class.forName("android.os.ServiceManager")
-                    .getDeclaredMethod("getService", String.class)
-                    .invoke(null, "display");
-            IInterface iInterface = (IInterface) Class.forName("android.hardware.display.IDisplayManager$Stub")
-                    .getMethod("asInterface", IBinder.class)
-                    .invoke(null, iBinder);
-            Object invoke = iInterface.getClass()
-                    .getMethod("getDisplayInfo", Integer.TYPE)
-                    .invoke(iInterface, 0);
-            Class cls = invoke.getClass();
-            int logicalWidth = cls.getDeclaredField("logicalWidth").getInt(invoke);
-            int logicalHeight = cls.getDeclaredField("logicalHeight").getInt(invoke);
-            return new int[]{logicalWidth, logicalHeight};
-        } catch (Exception e) {
-            Log.e(TAG, "getDisplaySize: ", e);
-            return null;
-        }
-    }
+
 }

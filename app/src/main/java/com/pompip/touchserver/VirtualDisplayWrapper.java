@@ -30,7 +30,7 @@ public class VirtualDisplayWrapper {
             Method method5 = cls.getMethod("setDisplayLayerStack", IBinder.class, Integer.TYPE);
             Method method6 = cls.getMethod("openTransaction");
             method = cls.getMethod("closeTransaction");
-            IBinder iBinder = (IBinder) method2.invoke(null, new Object[]{str, Boolean.TRUE});
+            IBinder iBinder = (IBinder) method2.invoke(null, str, Boolean.TRUE);
             method6.invoke(null);
             method3.invoke(null, iBinder, surface);
             method4.invoke(null, iBinder, 0, rect, rect2);

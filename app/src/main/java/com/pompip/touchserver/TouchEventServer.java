@@ -1,11 +1,8 @@
 package com.pompip.touchserver;
 
-import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.util.Log;
-
-import com.pompip.touchserver.wrappers.ServiceManager;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -24,7 +21,6 @@ public class TouchEventServer {
     private final byte[] lenBytes = new byte[4];
     private EventInjector mEventInjector;
     private InputStream mInputStream;
-    private ServiceManager mServiceManager;
     private static int width = 0;
     private static int bitrate = 1000000;
     public static void main(String[] args) {
@@ -66,10 +62,10 @@ public class TouchEventServer {
 
 
         Log.e(TAG, "client bind SUCCESS 1!");
-        mServiceManager = new ServiceManager();
+
         if (MODE == 1) {
             OutputStream outputStream = accept.getOutputStream();
-            Screenshot mScreenshot = new Screenshot(mServiceManager, outputStream);
+            Screenshot mScreenshot = new Screenshot(outputStream);
             Thread mThread = new Thread(mScreenshot, "Screenshot");
             mThread.start();
         } else if (MODE == 2) {
@@ -112,7 +108,7 @@ public class TouchEventServer {
 
     private void loop() {
         Log.e(TAG,"start Loop");
-        this.mEventInjector = new EventInjector(this.mServiceManager.getInputManager(), this.mServiceManager.getPowerManager());
+        this.mEventInjector = new EventInjector();
         this.mEventInjector.checkScreenOn();
         while (true) {
             ByteBuffer readByte = readByte(this.lenBytes, this.lenBytes.length);

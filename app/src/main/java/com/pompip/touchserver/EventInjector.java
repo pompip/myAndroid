@@ -7,6 +7,7 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import com.pompip.touchserver.wrappers.InputManager;
 import com.pompip.touchserver.wrappers.PowerManager;
+import com.pompip.touchserver.wrappers.ServiceManager;
 
 public class EventInjector {
     private InputManager mInputManager;
@@ -15,9 +16,9 @@ public class EventInjector {
     private final PointerCoords[] pointerCoords = {new PointerCoords()};
     private final PointerProperties[] pointerProperties = {new PointerProperties()};
 
-    public EventInjector(InputManager inputManager, PowerManager powerManager) {
-        this.mInputManager = inputManager;
-        this.mPowerManager = powerManager;
+    public EventInjector() {
+        this.mInputManager = ServiceManager.getInstance().getInputManager();
+        this.mPowerManager = ServiceManager.getInstance().getPowerManager();
         PointerProperties pointerProperties2 = this.pointerProperties[0];
         pointerProperties2.id = 0;
         pointerProperties2.toolType = 1;

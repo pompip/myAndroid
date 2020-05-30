@@ -12,7 +12,13 @@ public final class ServiceManager {
     private InputManager inputManager;
     private PowerManager powerManager;
 
-    public ServiceManager() {
+    public static ServiceManager getInstance() {
+        return serviceManager;
+    }
+
+    private static ServiceManager serviceManager = new ServiceManager();
+
+    private ServiceManager() {
         try {
             getServiceMethod = Class.forName("android.os.ServiceManager").getDeclaredMethod("getService", String.class);
         } catch (Exception e) {

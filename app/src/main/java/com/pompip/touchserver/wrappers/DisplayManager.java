@@ -1,6 +1,8 @@
 package com.pompip.touchserver.wrappers;
 
+import android.os.IBinder;
 import android.os.IInterface;
+import android.util.Log;
 
 public final class DisplayManager {
     private final IInterface manager;
