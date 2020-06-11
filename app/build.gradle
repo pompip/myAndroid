@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -51,7 +52,6 @@ dependencies {
 //    # ExoPlayer as IMediaPlayer: optional, experimental
 //    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
 
-    compileOnly 'de.robv.android.xposed:api:82'
 
     implementation 'com.jaredrummler:android-shell:1.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.6.0'

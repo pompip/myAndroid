@@ -18,7 +18,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.example.bonree.myapplication.R;
+import com.pompip.R;
 import com.pompip.media.MediaCodecWrapper;
 import com.pompip.screen.DataListener;
 import com.pompip.screen.ScreenService;

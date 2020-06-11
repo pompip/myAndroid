@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.example.bonree.myapplication.R;
+import com.pompip.R;
 import com.pompip.view.FloatingManager;
 import com.pompip.view.FloatingView;
 

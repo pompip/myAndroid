@@ -4,17 +4,19 @@ import android.app.Instrumentation
 import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
+import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import com.pompip.touchserver.wrappers.InputManager
-//import com.pompip.touchserver.wrappers.InputManager
-import com.pompip.touchserver.wrappers.ServiceManager
 import com.pompip.testHttp.NetManager
+import com.pompip.touchserver.wrappers.ServiceManager
+import kotlinx.android.synthetic.main.activity_click_test.*
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.floating_view.view.*
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
@@ -25,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     var num = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(com.pompip.R.layout.activity_click_test)
         test_button.setOnClickListener {
             num++
             test_edit.append("" + num)
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         }
 //        im = ServiceManager().inputManager
         getSystemService(Context.INPUT_SERVICE);
-        im = ServiceManager().inputManager
+        im = ServiceManager.getInstance().inputManager
 
 
 
@@ -43,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     val TAG = "MotionEvent";
+
 
     fun getDPI() {
         val displayMetrics = DisplayMetrics()

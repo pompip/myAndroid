@@ -4,10 +4,7 @@ import android.app.Application;
 import android.app.Instrumentation;
 import android.util.Log;
 
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+
 
 public class Main {
     private static final String TAG = "Main";

@@ -5,7 +5,8 @@ import android.support.test.uiautomator.UiDevice;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.example.bonree.myapplication.R;
+import com.pompip.R;
+
 
 public class UiAutoActivity extends AppCompatActivity {
 

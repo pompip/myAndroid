@@ -7,7 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.bonree.myapplication.R;
+import com.pompip.R;
+
 
 public class TrafficActivity extends AppCompatActivity {
 
