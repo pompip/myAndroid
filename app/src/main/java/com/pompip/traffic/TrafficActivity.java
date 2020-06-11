@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.pompip.R;
 
+import hugo.weaving.DebugLog;
+
 
 public class TrafficActivity extends AppCompatActivity {
 
@@ -42,9 +44,11 @@ public class TrafficActivity extends AppCompatActivity {
         countDownTimer.start();
     }
 
+
     long currentRT =0;
     long currentTT = 0;
 
+    @DebugLog
     private void genTraffic() {
         long rt = TrafficStats.getTotalRxBytes();
         long tt = TrafficStats.getTotalTxBytes();
