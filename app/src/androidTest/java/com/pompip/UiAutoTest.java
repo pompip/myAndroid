@@ -1,6 +1,7 @@
 package com.pompip;
 
 import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
@@ -16,6 +17,7 @@ import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiWatcher;
 import android.support.test.uiautomator.Until;
 import android.util.Log;
+import android.view.InputEvent;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,7 +35,6 @@ public class UiAutoTest  {
     public static void init(){
         instrumentation = InstrumentationRegistry.getInstrumentation();
         uiDevice = UiDevice.getInstance(instrumentation);
-
     }
 
     @Test
@@ -62,6 +63,8 @@ public class UiAutoTest  {
         uiDevice.waitForWindowUpdate(null,15000);
 //        uiDevice.sleep();
         Trace.endSection();
+        uiDevice.click(1,2);
+
     }
 
 //    @Test

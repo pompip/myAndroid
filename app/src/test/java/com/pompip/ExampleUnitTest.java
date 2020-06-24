@@ -183,9 +183,6 @@ public class ExampleUnitTest {
 
     @Test
     public void testWord(){
-
-
-
         int m = 5;
         int[][] number = new int[m+1][m+1];
         //m个苹果放在一个篮子里面只有一种
@@ -202,17 +199,31 @@ public class ExampleUnitTest {
         for(int j=1;j<m+1;j++){
             sum+=number[m][j];
         }
-        System.out.println(sum)
+        System.out.println(sum);
+    }
+    @Test
+    public void testJoin(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+//                while (true){
+                    System.out.println("hello");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+//                }
 
-
-
-
-
-
-
-
-
-        ;
+            }
+        });
+        try {
+            thread.start();
+            thread.join(10000);
+            System.out.println("end");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
 
